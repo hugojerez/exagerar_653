@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html style="background-color:black;">
+
+<head>
+    <title>Generic App</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="cordova.js"></script>
+    <script src="push.js"></script>
+    <script src="xhr.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="framework7.js"></script>
+</head>
+
+<body>
+    <style>
+    * {
+        letter-spacing: inherit;
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        outline: none;
+        word-wrap: break-word;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        vertical-align: top;
+        line-height: 162%;
+        -webkit-text-size-adjust: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        resize: inherit;
+        -webkit-appearance: inherit;
+        -moz-appearance: inherit;
+        appearance: inherit;
+        border-radius: 0;
+        background: initial;
+    }
+
+    ::-ms-clear,
+    ::-ms-reveal {
+        display: none;
+    }
+
+    ::-webkit-input-placeholder {
+        opacity: 0.5;
+        color: inherit;
+    }
+
+    :-moz-placeholder {
+        opacity: 0.5;
+        color: inherit;
+    }
+
+    ::-moz-placeholder {
+        opacity: 0.5;
+        color: inherit;
+    }
+
+    :-ms-input-placeholder {
+        opacity: 0.5;
+        color: inherit;
+    }
+
+    input,
+    textarea {
+        cursor: text;
+        -webkit-user-modify: read-write-plaintext-only;
+        -webkit-user-select: auto;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    *:focus {
+        outline: none;
+    }
+
+    html {
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+    }
+
+    body,
+    html {
+        position: fixed;
+        overflow: hidden;
+        -webkit-user-select: none;
+        -webkit-perspective: 1000;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform-style: preserve-3d;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -ms-user-select: none;
+        perspective: 1000;
+        backface-visibility: hidden;
+        webkit-transform-style: preserve-3d;
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+    }
+
+    .spinner {
+        text-align: center;
+        padding-left: 40px;
+        margin-top: 150px;
+    }
+
+    .spinner svg {
+        width: 110px;
+    }
+
+    .message {
+        text-align: center;
+        border: 1px solid #fff;
+        padding: 20px;
+        border-radius: 50px;
+        pointer-events: none;
+    }
+
+    body {
+        font-family: sans-serif;
+        color: rgb(20, 20, 20);
+        font-size: 18px;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        overflow: hidden;
+        right: 0;
+        background-color: #000000;
+        bottom: 0;
+        top: 0;
+        color: white;
+    }
+
+    .header {
+        background-color: #cb4350;
+        margin-top: 10px;
+        border-radius: 30px;
+    }
+
+    label {
+        text-align: center;
+        display: block;
+        padding: 0px 0;
+        color: #ffffff;
+        width: 82%;
+        text-transform: uppercase;
+        font-size: 14px;
+        margin-bottom: 14px;
+        margin: 0 auto;
+    }
+
+    .loadinginicializador {
+        display: block;
+        text-align: center;
+    }
+
+    ::selection {
+        background-color: rgba(0, 0, 0, 0);
+        color: black;
+    }
+
+    ::-moz-selection {
+        background-color: transparent;
+        color: black;
+    }
+    </style>
+    <script>
+    window.onerror = function(msg, url, linenumber) {
+        alert("Error message: "+msg+"\nURI: "+url+"\nLine Number: "+linenumber);
+        return true;
+    }
+    window.doCache = function(currentUrl, currentConfig) {
+        let url = currentUrl
+        let config = currentConfig || {};
+        if(config.tryAgainIfPluginFail == undefined){
+            config.tryAgainIfPluginFail = true;
+        }
+        if(config.generateNewCache == undefined){
+            config.generateNewCache = false;
+        }
+
+        if (localStorage.disableCache) {
+            return url;
+        }
+        if (window.FileTransfer) {
+            var newfilename = btoa(url);
+            var fileTransfer = new FileTransfer();
+            var uri = encodeURI(url);
+            if (localStorage[newfilename] == undefined || config.generateNewCache) {
+                fileTransfer.download(uri, "cdvfile://localhost/persistent/file/" + newfilename + (+new Date()), function(entry) {
+                    if(entry.nativeURL){
+                        if (localStorage[newfilename] != undefined) {
+                            var oldfilename = localStorage[newfilename].split("/").reverse()[0]
+                            window.resolveLocalFileSystemURL("cdvfile://localhost/persistent/file/", function(dir) {
+                                dir.getFile(oldfilename, {
+                                    create: true,
+                                    exclusive: false
+                                }, function(fileEntry) {
+                                    fileEntry.remove();
+                                }, function() {});
+                            })
+                        }
+
+                        localStorage[newfilename] = entry.nativeURL;
+
+
+                    }
+
+                    for (let i = 100 - 1; i >= 0; i--) {
+                        let n = i;
+                        setTimeout(function() {
+                            let elChild = document.createElement("div");
+                            elChild.style = "top:0;color: white;  z-index: 222222; position: fixed; height: 10px; left: 0%; right: 0%;";
+                            elChild.style.background = "dodgerblue";
+                            elChild.style.left = n + "%";
+                            elChild.style.opacity = (n + 20) / 100;
+                            document.body.appendChild(elChild);
+                            setTimeout(function() {
+                                elChild.parentNode.removeChild(elChild);
+                            }, 50)
+                        }, 30 * n)
+                    }
+                }, function(error) {}, false, {
+                    headers: {}
+                });
+            }
+            if (localStorage[newfilename]) {
+                return (localStorage[newfilename]);
+            } else {
+                return (url);
+            }
+        } else {
+            if (config.tryAgainIfPluginFail) {
+                setTimeout(function() {
+                    doCache(url, {
+                        tryAgainIfPluginFail: false
+                    })
+                }, 2000)
+            }
+            return url;
+        }
+    }
+    $(document).ready(function() {
+        $(".spinner").animate({
+            opacity: 1
+        }, 5000)
+        inicializadorFallado = function(n) {
+            n = n||0;
+            $(".message").fadeIn(5000).text("La conexión a internet no funciona adecuadamente "+(100+n));
+            setTimeout(function() {
+                cargar_app();
+            }, 200);
+        };
+
+        cargar_app = function() {
+            console.log("cargando")
+            $.ajax({
+                url: doCache("http://app.exagerar.com/apprender/653/0/453e5?header=1&productionMode=1" ),
+                timeout: 10000,
+                success: function(html, textStatus, xhr) {
+                    if (html == "") {
+                        inicializadorFallado(1);
+                    } else {
+
+                        if(xhr.state() == "resolved")
+                        {
+                            window.onerror = function(){ };
+                            $("body").html(html);
+                        }
+                        else{
+                            console.log("validación fallida");
+                            inicializadorFallado(2);
+                        }
+
+                    }
+                },
+                error: function() {
+                    inicializadorFallado(3);
+                }
+            });
+        }
+        cargar_app();
+    });
+    addtoolbarcolor = function() {
+        try {
+            StatusBar.backgroundColorByHexString("#000000");
+            addtoolbarcolor = null;
+        } catch (e) {
+
+            setTimeout(function() {
+                addtoolbarcolor();
+            });
+        }
+    };
+    addtoolbarcolor();
+    </script>
+    <div class=spinner style="opacity:0">
+        <svg version="1.1" id="L5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+            <circle fill="#fff" stroke="none" cx="6" cy="50" r="6" transform="translate(0 -14)">
+                <animateTransform attributeName="transform" dur="1s" type="translate" values="0 15 ; 0 -15; 0 15" repeatCount="indefinite" begin="0.1"></animateTransform>
+            </circle>
+            <circle fill="#fff" stroke="none" cx="30" cy="50" r="6" transform="translate(0 -6.66667)">
+                <animateTransform attributeName="transform" dur="1s" type="translate" values="0 10 ; 0 -10; 0 10" repeatCount="indefinite" begin="0.2"></animateTransform>
+            </circle>
+            <circle fill="#fff" stroke="none" cx="54" cy="50" r="6" transform="translate(0 -1.33333)">
+                <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.3"></animateTransform>
+            </circle>
+        </svg>
+    </div>
+    <div style="width:80%;margin:40% auto;">
+        <p style="display:none" class=message></p>
+    </div>
+</body>
+
+</html>
